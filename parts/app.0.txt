@@ -1,0 +1,83 @@
+(() => {
+  'use strict';
+  const $ = (q, el=document) => el.querySelector(q);
+  const $$ = (q, el=document) => [...el.querySelectorAll(q)];
+  const app = $('#app');
+  if (!app) return;
+
+  const WORLDS = [
+    {id:'garden', name:'Jardín Mágico', min:1, max:10, sky:'#c9eff8', ground:'#ddefc7', accent:'#f55f93', accent2:'#f4c74e', decor:['🌳','🌼','🦋','🐞','🌷'], objects:['apple','strawberry','flower','butterfly','ladybug']},
+    {id:'candy', name:'Reino Dulce', min:11, max:20, sky:'#e2d8fb', ground:'#f8dfdf', accent:'#ec6d9d', accent2:'#f5c651', decor:['🍭','🍬','🧁','✨','🍪'], objects:['candy','cookie','cupcake','star','berry']},
+    {id:'ocean', name:'Mundo Marino', min:21, max:50, sky:'#bdebf7', ground:'#cdeeea', accent:'#3ea7d7', accent2:'#f0c85f', decor:['🐠','🐚','🫧','⭐','🌊'], objects:['fish','shell','star','bubble','pearl']},
+    {id:'forest', name:'Bosque Encantado', min:51, max:100, sky:'#d8eef0', ground:'#d4ebca', accent:'#7f6ac7', accent2:'#edb94c', decor:['🦊','🍄','🌿','✨','🧚'], objects:['flower','mushroom','gem','star','berry']},
+    {id:'space', name:'Viaje Espacial', min:101, max:200, sky:'#d8dcfa', ground:'#dfe7ef', accent:'#7865cf', accent2:'#f3bd4d', decor:['🚀','🪐','⭐','🌙','☄️'], objects:['planet','rocket','star','moon','gem']},
+    {id:'castle', name:'Castillo Arcoíris', min:201, max:300, sky:'#e2ddfb', ground:'#f0e4cf', accent:'#d76aa7', accent2:'#f2bf4f', decor:['🏰','👑','💎','🌈','✨'], objects:['crown','gem','star','flower','heart']}
+  ];
+  const REWARDS = ['🦄','🐰','🦋','🐼','🐬','🦊','🐸','🐱','🐶','🐧','🐝','🐨','🐳','🦖','🧸','👑','🌈','🚀','🏰','💎'];
+  const STORAGE_KEY = 'aventuraNumericaScarlethV2';
+  const defaultState = () => ({currentNumber:1, maxCompleted:0, stars:0, rewards:[], errorsByNumber:{}, totalErrors:0, lastPlayed:Date.now()});
+  let state = loadState();
+  let currentMissionNumber = clamp(state.currentNumber,1,300);
+  let stageIndex = 0;
+  let stageTypes = [];
+  let familyViewStart = familyStart(currentMissionNumber);
+  let audioEnabled = false;
+  let deferredInstallPrompt = null;
+  let toastTimer = null;
+  let adultHoldTimer = null;
+
+  const screens = {
+    home: $('#homeScreen'), map: $('#mapScreen'), mission: $('#missionScreen'), game: $('#gameScreen'), reward: $('#rewardScreen'), collection: $('#collectionScreen'), profile: $('#profileScreen'), adult: $('#adultScreen')
+  };
+
+  function clamp(n,min,max){ return Math.max(min,Math.min(max,n)); }
+  function loadState(){
+    try { const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY)); return {...defaultState(), ...(parsed||{})}; }
+    catch { return defaultState(); }
+  }
+  function saveState(){
+    state.lastPlayed = Date.now();
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+    refreshGlobalUI();
+  }
+  function worldFor(n){ return WORLDS.find(w => n>=w.min && n<=w.max) || WORLDS[WORLDS.length-1]; }
+  function worldIndexFor(n){ return Math.max(0, WORLDS.findIndex(w => n>=w.min && n<=w.max)); }
+  function familyStart(n){ return Math.floor((n-1)/10)*10+1; }
+  function familyEnd(start){ return Math.min(300,start+9); }
+  function formatRange(start){ return `${start}–${familyEnd(start)}`; }
+  function setTheme(n){
+    const w=worldFor(n);
+    const root=document.documentElement;
+    root.style.setProperty('--world-sky',w.sky);root.style.setProperty('--world-ground',w.ground);root.style.setProperty('--world-accent',w.accent);root.style.setProperty('--world-accent2',w.accent2);
+    const decor=$('#worldDecor'); decor.innerHTML='';
+    w.decor.forEach((x,i)=>{ const s=document.createElement('span'); s.textContent=x; s.className='decor-item'; s.style.left=(6+(i*22)%86)+'%'; s.style.top=(14+(i*17)%67)+'%'; s.style.fontSize=(26+(i%3)*8)+'px'; s.style.opacity='.17'; decor.appendChild(s); });
+  }
+  function showScreen(name){
+    Object.values(screens).forEach(s => s?.classList.remove('active'));
+    screens[name]?.classList.add('active');
+    setTheme(name==='adult'?state.currentNumber:(name==='mission'||name==='game'?currentMissionNumber:familyViewStart||state.currentNumber));
+    window.scrollTo?.({top:0,behavior:'instant'});
+  }
+  function speak(text, force=false){
+    if(force) audioEnabled=true;
+    if(!audioEnabled || !('speechSynthesis' in window)) return;
+    try{
+      window.speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance(text);u.lang='es-CO';u.rate=.82;u.pitch=1.12;u.volume=1;
+      window.speechSynthesis.speak(u);
+    }catch{}
+  }
+  function toast(text){
+    const t=$('#toast');t.textContent=text;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1000);
+  }
+  function registerError(n, audio='Casi, inténtalo otra vez.'){
+    state.totalErrors++; state.errorsByNumber[n]=(state.errorsByNumber[n]||0)+1; saveState(); toast('💛 Casi…'); speak(audio);
+  }
+  function successTransition(next){
+    const o=$('#successOverlay');o.classList.add('show');speak(['¡Muy bien!','¡Excelente!','¡Lo lograste!'][Math.floor(Math.random()*3)]);
+    setTimeout(()=>{o.classList.remove('show');next();},650);
+  }
+
+  // --- illustrations ---
+  function girlSVG(){return `<svg viewBox="0 0 310 300" aria-hidden="true"><defs><filter id="wig"><feTurbulence baseFrequency=".018" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.2"/></filter></defs><g filter="url(#wig)"><ellipse cx="160" cy="280" rx="102" ry="12" fill="rgba(40,71,104,.08)"/><path d="M64 113Q52 35 140 30Q226 25 245 113Q240 183 191 200L103 198Q66 173 64 113Z" fill="#6b3f2d"/><circle cx="77" cy="66" r="40" fill="#6b3f2d"/><circle cx="224" cy="64" r="43" fill="#6b3f2d"/><ellipse cx="154" cy="116" rx="76" ry="70" fill="#f3b18d"/><path d="M91 82Q135 34 205 69Q165 44 119 59Q99 66 91 82Z" fill="#6b3f2d"/><circle cx="124" cy="118" r="8" fill="#3d2d29"/><circle cx="181" cy="118" r="8" fill="#3d2d29"/><circle cx="121" cy="115" r="2.8" fill="white"/><circle cx="178" cy="115" r="2.8" fill="white"/><ellipse cx="105" cy="143" rx="14" ry="8" fill="#ee8490" opacity=".55"/><ellipse cx="201" cy="143" rx="14" ry="8" fill="#ee8490" opacity=".55"/><path d="M137 148Q154 170 174 148" fill="none" stroke="#a94d59" stroke-width="7" stroke-linecap="round"/><path d="M105 190Q154 174 207 192L199 274L111 274Z" fill="#ef719d"/><path d="M126 190H187L194 280H118Z" fill="#4d90c7"/><path d="M133 189L139 249M181 189L177 249" stroke="#4d90c7" stroke-width="16" stroke-linecap="round"/><circle cx="141" cy="211" r="5" fill="#f4cf55"/><circle cx="178" cy="211" r="5" fill="#f4cf55"/><path d="M110 200Q75 210 55 239" fill="none" stroke="#f3b18d" stroke-width="21" stroke-linecap="round"/><path d="M205 201Q236 208 257 235" fill="none" stroke="#f3b18d" stroke-width="21" stroke-linecap="round"/><path d="M194 33Q226 11 239 41Q215 60 194 33Z" fill="#f76095"/><path d="M195 34Q165 14 158 44Q178 61 195 34Z" fill="#ff8eb2"/><circle cx="195" cy="36" r="12" fill="#e84882"/></g></svg>`}
+  function avatarSVG(){return `<svg viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="32" f
