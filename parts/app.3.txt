@@ -1,0 +1,48 @@
+ice','trace']; if(n<=20)return['place','choice','trace']; if(n<=100)return n%2?['place','sequence','choice']:['sequence','place','choice']; return n%2?['place','choice','sequence']:['sequence','place','choice']; }
+  function startMission(){ stageIndex=0;stageTypes=stagesFor(currentMissionNumber);showScreen('game');renderStage(); }
+  function renderStage(){ $('#playArea').innerHTML=''; updateStageStars(); const type=stageTypes[stageIndex]; if(type==='collect')renderCollect(); else if(type==='choice')renderChoice(); else if(type==='sequence')renderSequence(); else if(type==='place')renderPlaceValue(); else renderTrace(); }
+  function updateStageStars(){ $('#stageStars').textContent=[0,1,2].map(i=>i<stageIndex?'★':'☆').join(' '); }
+  function nextStage(){ successTransition(()=>{ stageIndex++; if(stageIndex<stageTypes.length)renderStage(); else completeMission(); }); }
+  function completeMission(){
+    const n=currentMissionNumber; state.maxCompleted=Math.max(state.maxCompleted,n); state.stars+=3; if(n===state.currentNumber && n<300) state.currentNumber=n+1; if(n===300) state.currentNumber=300;
+    const reward=rewardForNumber(n); if(!state.rewards.includes(reward) || n%5===0) state.rewards.push(reward); saveState();
+    $('#rewardSticker').textContent=n===300?'🏆':reward; showScreen('reward'); speak(n===300?'¡Increíble! Llegaste al número trescientos.':`¡Excelente! Completaste el número ${n}.`);
+    setTimeout(()=>{
+      if(n===300){ familyViewStart=familyStart(300); showScreen('home'); refreshGlobalUI(); toast('🏆 ¡Llegaste a 300!'); }
+      else { familyViewStart=familyStart(state.currentNumber); renderMap(); showScreen('map'); speak('¡Nueva misión desbloqueada!'); }
+    },2100);
+  }
+  function digits(n){ return {h:Math.floor(n/100),t:Math.floor((n%100)/10),u:n%10}; }
+  function taskNumber(symbolHtml){ $('#taskCard').innerHTML=`<div class="task-number">${currentMissionNumber}</div><div class="task-symbols">${symbolHtml||''}</div>`; }
+
+  // --- minigame 1: collect ---
+  function renderCollect(){
+    const n=currentMissionNumber,kind=objectForNumber(n);taskNumber(objectSVG(kind));
+    const area=$('#playArea');let count=0;
+    const counter=document.createElement('div');counter.className='collect-counter';const slots=document.createElement('div');slots.className='collect-slots';for(let i=0;i<n;i++){const s=document.createElement('span');s.className='collect-slot';slots.appendChild(s)}const num=document.createElement('div');num.className='counter-number';num.textContent='0';counter.append(slots,num);area.appendChild(counter);
+    const cont=document.createElement('div');cont.className='target-container';cont.innerHTML=containerSVG(kind);const fill=document.createElement('div');fill.className='container-fill';cont.appendChild(fill);area.appendChild(cont);
+    const positions=[[8,27],[27,31],[49,24],[71,31],[16,48],[42,49],[68,49],[24,67],[51,67],[73,68],[38,82],[64,82]];const total=Math.min(12,n+2);
+    for(let i=0;i<total;i++){const b=document.createElement('button');b.type='button';b.className='collect-item';b.innerHTML=objectSVG(kind);b.style.left=`calc(${positions[i][0]}% - 32px)`;b.style.top=`${positions[i][1]}%`;b.style.animationDelay=(i*.08)+'s';b.addEventListener('click',()=>{if(b.classList.contains('got')||count>=n)return;b.classList.add('got');count++;speak(String(count));const s=slots.children[count-1];if(s){s.classList.add('filled');s.innerHTML=objectSVG(kind)}num.textContent=count;const mini=document.createElement('div');mini.className='container-mini';mini.innerHTML=objectSVG(kind);fill.appendChild(mini);if(count===n)setTimeout(nextStage,380)});area.appendChild(b)}
+    speak(`Pon ${n} ${objectSpeech(kind)}.`,false);
+  }
+  function objectSpeech(k){return ({apple:'manzanas',strawberry:'fresas',flower:'flores',butterfly:'mariposas',ladybug:'mariquitas',candy:'dulces',cookie:'galletas',cupcake:'pastelitos',berry:'frutas',fish:'peces',shell:'conchas',bubble:'burbujas',pearl:'perlas',mushroom:'honguitos',gem:'gemas',planet:'planetas',rocket:'cohetes',moon:'lunas',crown:'coronas',heart:'corazones',star:'estrellas'})[k]||'objetos';}
+
+  // --- minigame choice ---
+  function renderChoice(){
+    const n=currentMissionNumber;taskNumber(objectSVG(objectForNumber(n)));const area=$('#playArea');const grid=document.createElement('div');grid.className='choice-grid';
+    makeChoices(n).forEach(v=>{const b=document.createElement('button');b.type='button';b.className='number-choice';b.innerHTML=`<span>${v}</span>`;b.addEventListener('click',()=>{if(v===n){b.disabled=true;b.animate([{transform:'scale(1)'},{transform:'scale(1.08)'},{transform:'scale(.94)',opacity:.5}],{duration:360,fill:'forwards'});setTimeout(nextStage,330)}else{registerError(n,`Casi. Busca el número ${n}.`);b.classList.remove('wrong');void b.offsetWidth;b.classList.add('wrong')}});grid.appendChild(b)});area.appendChild(grid);speak(`Busca el número ${n}.`,false);
+  }
+  function makeChoices(n){const set=new Set([n]);const span=n<20?5:n<100?12:35;while(set.size<4){let v=n+Math.floor(Math.random()*(span*2+1))-span;v=clamp(v,1,300);set.add(v)}return [...set].sort(()=>Math.random()-.5);}
+
+  // --- sequence ---
+  function renderSequence(){
+    const n=currentMissionNumber;$('#taskCard').innerHTML=`<div class="task-sequence">🔎 ${n}</div>`;const area=$('#playArea');const wrap=document.createElement('div');wrap.className='sequence-wrap';const row=document.createElement('div');row.className='sequence-row';let seq,correct=n;
+    if(n===300)seq=[298,299,null]; else if(n===1){seq=[1,2,null];correct=3;} else seq=[n-1,null,n+1];
+    seq.forEach(v=>{const c=document.createElement('div');c.className='seq-card '+(v==null?'missing':'');c.textContent=v==null?'?':v;row.appendChild(c)});wrap.appendChild(row);
+    const choices=document.createElement('div');choices.className='sequence-choices';const set=new Set([correct]);while(set.size<3){set.add(clamp(correct+Math.floor(Math.random()*7)-3,1,300))}[...set].sort(()=>Math.random()-.5).forEach(v=>{const b=document.createElement('button');b.type='button';b.className='seq-choice';b.textContent=v;b.addEventListener('click',()=>{if(v===correct){row.querySelector('.missing').textContent=v;setTimeout(nextStage,330)}else{registerError(n,'Casi. Mira la secuencia otra vez.');b.classList.remove('wrong');void b.offsetWidth;b.classList.add('wrong')}});choices.appendChild(b)});wrap.appendChild(choices);area.appendChild(wrap);speak(`¿Qué número falta? Busca ${correct}.`,false);
+  }
+
+  // --- place value ---
+  function renderPlaceValue(){
+    const n=currentMissionNumber,{h,t,u}=digits(n);$('#taskCard').innerHTML=`<div class="task-number">${n}</div><div class="task-symbols">${h?hundredSVG():''}${t?tenSVG():''}${u?oneSVG():''}</div>`;const area=$('#playArea');const wrap=document.createElement('div');wrap.className='place-wrap';const target=document.createElement('div');target.className='place-target';
+    const categories=[{key:'h',need:h,label:'CENTENAS',svg:hundredSVG(),color:'#9b8ae2'},{key:'t',need:t
