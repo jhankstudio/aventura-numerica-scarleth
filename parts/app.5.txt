@@ -1,0 +1,33 @@
+
+
+  }
+
+  // --- navigation ---
+  $$('[data-nav]').forEach(b=>b.addEventListener('click',()=>{const nav=b.dataset.nav;if(nav==='home'){showScreen('home');refreshGlobalUI()}else if(nav==='map'){familyViewStart=familyStart(state.currentNumber);renderMap();showScreen('map')}else if(nav==='collection'){refreshGlobalUI();showScreen('collection')}else if(nav==='profile'){refreshGlobalUI();showScreen('profile')}}));
+  $$('[data-back]').forEach(b=>b.addEventListener('click',()=>{const back=b.dataset.back;if(back==='home')showScreen('home');else if(back==='map'){familyViewStart=familyStart(state.currentNumber);renderMap();showScreen('map')}}));
+  $('#continueBtn').addEventListener('click',()=>{audioEnabled=true;familyViewStart=familyStart(state.currentNumber);renderMap();showScreen('map');speak('¡Hola, Scarleth! Toca la misión brillante para continuar.',true)});
+  $('#worldPill').addEventListener('click',()=>speak(`${worldFor(familyViewStart).name}. Números del ${worldFor(familyViewStart).min} al ${worldFor(familyViewStart).max}.`,true));
+  $('#mapAudio').addEventListener('click',()=>speak('Toca la misión brillante para continuar.',true));
+  $('#missionAudio').addEventListener('click',()=>speak(`Vamos con el número ${currentMissionNumber}.`,true));
+  $('#startMission').addEventListener('click',()=>{audioEnabled=true;startMission()});
+  $('#gameAudio').addEventListener('click',repeatCurrentInstruction);
+  $('#familyPrev').addEventListener('click',()=>{const w=worldFor(familyViewStart);familyViewStart=Math.max(familyStart(w.min),familyViewStart-10);renderMap()});
+  $('#familyNext').addEventListener('click',()=>{const w=worldFor(familyViewStart);familyViewStart=Math.min(familyStart(w.max),familyViewStart+10);renderMap()});
+  $('#adultClose').addEventListener('click',()=>{refreshGlobalUI();showScreen('home')});
+  $('#resetBtn').addEventListener('click',()=>{if(confirm('¿Reiniciar todo el progreso del juego?')){state=defaultState();currentMissionNumber=1;familyViewStart=1;saveState();renderMap();showScreen('home');toast('Progreso reiniciado')}});
+  $('#adultJumpBtn').addEventListener('click',()=>{const input=$('#adultJumpNumber');const n=clamp(parseInt(input.value||'1',10)||1,1,300);input.value=n;currentMissionNumber=n;familyViewStart=familyStart(n);openMission(n)});
+
+  // adult hold (1.2 s)
+  const adultHold=$('#adultHold');
+  const startAdultHold=()=>{clearTimeout(adultHoldTimer);adultHoldTimer=setTimeout(()=>{renderAdult();showScreen('adult')},1200)};
+  const cancelAdultHold=()=>clearTimeout(adultHoldTimer);
+  adultHold.addEventListener('pointerdown',startAdultHold); adultHold.addEventListener('pointerup',cancelAdultHold);adultHold.addEventListener('pointercancel',cancelAdultHold);adultHold.addEventListener('pointerleave',cancelAdultHold);
+
+  // PWA install
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;$('#installBtn').classList.remove('hidden')});
+  $('#installBtn').addEventListener('click',async()=>{if(!deferredInstallPrompt){toast('Usa “Agregar a pantalla de inicio” en tu navegador.');return}deferredInstallPrompt.prompt();try{await deferredInstallPrompt.userChoice}catch{}deferredInstallPrompt=null;$('#installBtn').classList.add('hidden')});
+  if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
+
+  // initial
+  setTheme(state.currentNumber); refreshGlobalUI(); renderMap();
+})();
