@@ -1,0 +1,66 @@
+ll="none" stroke="#70c7db" stroke-width="5"/></svg>`;
+    if(['candy','cookie','cupcake','berry'].includes(kind)) return `<svg viewBox="0 0 150 130" style="width:150px;height:130px;position:absolute;left:0;bottom:0"><path d="M25 52H125L116 112Q75 124 34 112Z" fill="#f0b3c8" stroke="#c87d98" stroke-width="5"/><path d="M39 51Q45 15 75 15Q105 15 111 51" fill="none" stroke="#c87d98" stroke-width="7"/></svg>`;
+    if(['planet','rocket','moon'].includes(kind)) return `<svg viewBox="0 0 150 130" style="width:150px;height:130px;position:absolute;left:0;bottom:0"><path d="M25 74Q75 48 125 74L115 116H35Z" fill="#7f80c7" stroke="#5b5e9f" stroke-width="5"/><path d="M42 75Q75 22 108 75" fill="none" stroke="#5b5e9f" stroke-width="7"/><circle cx="75" cy="84" r="7" fill="#f5c952"/></svg>`;
+    if(['crown','gem','heart'].includes(kind)) return `<svg viewBox="0 0 150 130" style="width:150px;height:130px;position:absolute;left:0;bottom:0"><path d="M22 58H128L118 114H32Z" fill="#b9783f" stroke="#81512e" stroke-width="5"/><path d="M22 58L40 35H110L128 58" fill="#d59a55" stroke="#81512e" stroke-width="5"/><circle cx="75" cy="79" r="8" fill="#f5ca4e"/></svg>`;
+    return `<svg viewBox="0 0 150 130" style="width:150px;height:130px;position:absolute;left:0;bottom:0"><path d="M19 53Q75 28 131 53L119 112Q75 124 31 112Z" fill="#d49a5a" stroke="#94643d" stroke-width="5"/><path d="M40 53Q48 13 75 13Q102 13 110 53" fill="none" stroke="#94643d" stroke-width="7"/><path d="M31 68H121M35 85H118M46 52L51 114M70 45L71 119M95 45L92 119M116 52L108 114" stroke="#b97b46" stroke-width="4" opacity=".75"/></svg>`;
+  }
+
+  function objectForNumber(n){ const w=worldFor(n); return w.objects[(n-w.min)%w.objects.length]; }
+  function rewardForNumber(n){ return REWARDS[(n-1)%REWARDS.length]; }
+
+  // --- UI refresh ---
+  function refreshGlobalUI(){
+    const n=clamp(state.currentNumber,1,300), w=worldFor(n);
+    $('#homeNumber').textContent=n; $('#homeRange').textContent=formatRange(familyStart(n)); $('#homeWorldLabel').textContent=w.name;
+    $('#heroGirl').innerHTML=girlSVG(); $('#miniAvatar').innerHTML=avatarSVG(); $('#profileGirl').innerHTML=girlSVG();
+    $('#collectionStars').textContent=state.stars; $('#collectionCount').textContent=state.rewards.length;
+    $('#profileStars').textContent=state.stars; $('#profileCompleted').textContent=state.maxCompleted; $('#profileRewards').textContent=state.rewards.length; $('#profileWorld').textContent=w.name;
+    renderCollection(); renderAdult();
+  }
+  function renderCollection(){
+    const grid=$('#collectionGrid'); if(!grid) return; grid.innerHTML='';
+    const shown=24;
+    for(let i=0;i<shown;i++){ const d=document.createElement('div'); const unlocked=state.rewards[i]!=null; d.className='collection-item '+(unlocked?'':'locked'); d.textContent=unlocked?state.rewards[i]:'?'; grid.appendChild(d); }
+  }
+  function renderAdult(){
+    $('#adultCurrent').textContent=state.currentNumber; $('#adultCompleted').textContent=state.maxCompleted; $('#adultStars').textContent=state.stars; $('#adultErrors').textContent=state.totalErrors;
+    const worlds=$('#adultWorlds');worlds.innerHTML='';
+    WORLDS.forEach(w=>{ const completed=clamp(state.maxCompleted-w.min+1,0,w.max-w.min+1); const total=w.max-w.min+1; const pct=Math.round(completed/total*100); const row=document.createElement('div');row.className='adult-world-row';row.innerHTML=`<div><b>${w.name}</b><div class="adult-progress"><span style="width:${pct}%"></span></div></div><strong>${pct}%</strong>`;worlds.appendChild(row); });
+    const trouble=$('#adultTrouble'); trouble.innerHTML='';
+    const entries=Object.entries(state.errorsByNumber||{}).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    if(!entries.length){ trouble.textContent='Todavía no hay errores registrados.'; trouble.style.color='#718091'; }
+    else { trouble.style.color=''; entries.forEach(([n,c])=>{const s=document.createElement('span');s.className='trouble-chip';s.textContent=`${n} · ${c}`;trouble.appendChild(s)}); }
+  }
+
+  // --- map ---
+  function renderMap(){
+    const w=worldFor(familyViewStart); setTheme(familyViewStart);
+    $('#mapTitle').textContent=w.name; $('#mapRange').textContent=formatRange(familyViewStart); $('#familyLabel').textContent=formatRange(familyViewStart); $('#worldPill').textContent=`${worldEmoji(w.id)} ${w.name}`;
+    const nodes=$('#mapNodes');nodes.innerHTML='';
+    const positions=[[22,7],[61,15],[28,27],[64,38],[25,49],[61,60],[30,70],[65,80],[29,89],[61,94]];
+    const end=familyEnd(familyViewStart);
+    for(let n=familyViewStart;n<=end;n++){
+      const i=n-familyViewStart, pos=positions[i];const b=document.createElement('button');b.type='button';
+      const status=n<=state.maxCompleted?'completed':n===state.currentNumber?'current':'locked'; b.className=`map-node ${status}`;b.style.left=`calc(${pos[0]}% - 34px)`;b.style.top=`calc(${pos[1]}% - 18px)`;b.disabled=status==='locked';
+      b.innerHTML=status==='locked'?`<span class="lock">🔒</span>`:`<span class="number-badge">${n}</span>${status==='completed'?'<span class="mini-star">⭐</span>':''}`;
+      b.addEventListener('click',()=>openMission(n));nodes.appendChild(b);
+    }
+    const decor=$('#mapDecor');decor.innerHTML='';w.decor.slice(0,5).forEach((x,i)=>{const s=document.createElement('span');s.className='decor-item';s.textContent=x;s.style.left=[4,82,8,78,48][i]+'%';s.style.top=[18,28,55,68,88][i]+'%';decor.appendChild(s)});
+    const minFamily=familyStart(w.min), maxFamily=familyStart(w.max);
+    $('#familyPrev').disabled=familyViewStart<=minFamily; $('#familyNext').disabled=familyViewStart>=maxFamily;
+    $('#familyPrev').style.opacity=$('#familyPrev').disabled?'.35':'1'; $('#familyNext').style.opacity=$('#familyNext').disabled?'.35':'1';
+  }
+  function worldEmoji(id){ return ({garden:'🌳',candy:'🍭',ocean:'🌊',forest:'🦄',space:'🚀',castle:'🏰'})[id]||'✨'; }
+
+  // --- mission setup ---
+  function openMission(n){
+    currentMissionNumber=clamp(n,1,300); const kind=objectForNumber(currentMissionNumber); setTheme(currentMissionNumber);
+    $('#missionNumber').textContent=currentMissionNumber; $('#missionArt').innerHTML=objectSVG(kind); renderMissionQuantity(currentMissionNumber, kind); showScreen('mission');
+    speak(`Vamos con el número ${currentMissionNumber}.`,false);
+  }
+  function renderMissionQuantity(n, kind){
+    const box=$('#missionQuantity');box.innerHTML='';
+    if(n<=10){for(let i=0;i<n;i++){const s=document.createElement('span');s.className='qty-dot';s.innerHTML=objectSVG(kind);box.appendChild(s)}}
+    else { const {h,t,u}=digits(n); const groups=[['C',h,hundredSVG()],['D',t,tenSVG()],['U',u,oneSVG()]]; groups.forEach(([label,count,svg])=>{if(count){const d=document.createElement('div');d.style.cssText='display:flex;align-items:center;gap:4px;padding:4px 7px;border-radius:999px;background:#fff';d.innerHTML=`<span style="width:23px;height:23px">${svg}</span><b>${count}</b><small>${label}</small>`;box.appendChild(d)}}); }
+  }
+  function stagesFor(n){ if(n<=10)return['collect','cho
