@@ -1,0 +1,14 @@
+{
+  "name": "Aventura Numérica de Scarleth",
+  "short_name": "Aventura Numérica",
+  "description": "Juego educativo infantil para aprender los números del 1 al 300.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fffaf0",
+  "theme_color": "#f65f93",
+  "orientation": "portrait-primary",
+  "icons": [
+    {"src":"icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
