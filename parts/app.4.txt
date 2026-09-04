@@ -1,0 +1,36 @@
+,label:'DECENAS',svg:tenSVG(),color:'#74c9a7'},{key:'u',need:u,label:'UNIDADES',svg:oneSVG(),color:'#f3c64e'}].filter(x=>x.need>0);
+    const counts={h:0,t:0,u:0};
+    categories.forEach(cat=>{const col=document.createElement('div');col.className='place-column';col.dataset.key=cat.key;col.innerHTML=`<div class="place-icon">${cat.svg}</div><b>0</b><small>${cat.label}</small><div class="place-slots"></div>`;const slots=$('.place-slots',col);for(let i=0;i<cat.need;i++){const s=document.createElement('span');s.className='place-slot';slots.appendChild(s)}target.appendChild(col)});wrap.appendChild(target);
+    const source=document.createElement('div');source.className='place-source';categories.forEach(cat=>{const b=document.createElement('button');b.type='button';b.className='place-add';b.innerHTML=`${cat.svg}<span class="plus">+</span>`;b.addEventListener('click',()=>{if(counts[cat.key]>=cat.need)return;counts[cat.key]++;const col=target.querySelector(`[data-key="${cat.key}"]`);$('b',col).textContent=counts[cat.key];const slot=$$('.place-slot',col)[counts[cat.key]-1];slot.classList.add('filled');slot.style.background=cat.color;b.animate([{transform:'scale(1)'},{transform:'scale(1.08)'},{transform:'scale(1)'}],{duration:180});const done=categories.every(c=>counts[c.key]===c.need);if(done)setTimeout(nextStage,380)});source.appendChild(b)});wrap.appendChild(source);area.appendChild(wrap);
+    const parts=[];if(h)parts.push(`${h} ${h===1?'centena':'centenas'}`);if(t)parts.push(`${t} ${t===1?'decena':'decenas'}`);if(u)parts.push(`${u} ${u===1?'unidad':'unidades'}`);speak(`Construye ${n}. ${parts.join(', ')}.`,false);
+  }
+
+  // --- trace, one digit at a time ---
+  const DIGIT_PATHS={
+    '0':'M150 36 C86 36 78 93 78 132 C78 191 96 230 150 230 C204 230 222 191 222 132 C222 75 204 36 150 36',
+    '1':'M115 78 L150 38 L150 230',
+    '2':'M83 82 C105 37 190 31 213 80 C228 113 200 137 168 159 L86 222 L220 222',
+    '3':'M84 57 C126 32 199 38 210 84 C219 119 187 137 154 139 C190 139 220 157 219 190 C218 235 132 247 82 217',
+    '4':'M191 229 L191 39 L76 164 L225 164',
+    '5':'M216 42 L91 42 L82 128 C111 111 162 111 194 130 C231 151 229 210 190 231 C151 250 104 238 78 214',
+    '6':'M211 62 C175 29 121 37 92 81 C66 119 69 181 93 215 C119 251 190 248 214 209 C240 167 213 122 167 120 C120 119 88 147 83 180',
+    '7':'M76 44 L225 44 L124 232',
+    '8':'M150 132 C102 132 79 110 80 78 C81 43 111 33 150 33 C189 33 219 43 220 78 C221 110 198 132 150 132 C99 132 74 157 74 190 C74 230 107 241 150 241 C193 241 226 230 226 190 C226 157 201 132 150 132',
+    '9':'M215 139 C190 160 142 159 108 137 C72 114 75 61 112 41 C153 19 211 39 222 86 C235 143 212 200 167 228 C137 247 105 236 87 220'
+  };
+  function renderTrace(){
+    const n=currentMissionNumber;const digitsArr=String(n).split('');let digitStep=0;taskNumber('<span style="font-size:31px">✏️</span>');const area=$('#playArea');
+    function drawDigit(){area.innerHTML='';const digit=digitsArr[digitStep];const step=document.createElement('div');step.className='trace-step';step.textContent=digitsArr.length>1?`${digitStep+1} / ${digitsArr.length}`:'';area.appendChild(step);const card=document.createElement('div');card.className='trace-card';const d=DIGIT_PATHS[digit];card.innerHTML=`<svg class="trace-svg" viewBox="0 0 300 260" preserveAspectRatio="none"><path class="trace-lane" d="${d}"></path><path id="traceGuide" class="trace-dash" d="${d}"></path><circle id="traceStart" r="12" fill="#85d1aa" stroke="white" stroke-width="5"/></svg><canvas class="trace-canvas"></canvas><div class="trace-hand">👆</div><div class="trace-bar"><div class="trace-fill"></div></div>`;area.appendChild(card);const path=$('#traceGuide',card),start=$('#traceStart',card),canvas=$('.trace-canvas',card),hand=$('.trace-hand',card),bar=$('.trace-fill',card);const total=path.getTotalLength(),pts=[];for(let i=0;i<=150;i++){const p=path.getPointAtLength(total*i/150);pts.push({x:p.x,y:p.y,index:i})}start.setAttribute('cx',pts[0].x);start.setAttribute('cy',pts[0].y);let progress=0,drawing=false,last=null,finished=false;
+      requestAnimationFrame(()=>{const r=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.max(1,Math.floor(r.width*dpr));canvas.height=Math.max(1,Math.floor(r.height*dpr));const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--world-accent').trim()||'#f55f93';ctx.lineWidth=21;ctx.lineCap='round';ctx.lineJoin='round';function toP(e){const rr=canvas.getBoundingClientRect();return{x:(e.clientX-rr.left)/rr.width*300,y:(e.clientY-rr.top)/rr.height*260,cx:e.clientX-rr.left,cy:e.clientY-rr.top}}function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}function nearest(p){let best=null,dd=999;for(let i=Math.max(0,progress-12);i<=Math.min(pts.length-1,progress+28);i++){const z=dist(p,pts[i]);if(z<dd){dd=z;best=pts[i]}}return{best,d:dd}}function moveHand(){const p=pts[Math.min(progress+7,pts.length-1)],rr=canvas.getBoundingClientRect();hand.style.left=(14+p.x/300*rr.width-8)+'px';hand.style.top=(14+p.y/260*rr.height-5)+'px'}function advance(p){const near=nearest(p);if(near.best&&near.d<68&&near.best.index>=progress-7){progress=Math.max(progress,near.best.index);bar.style.width=Math.round(progress/(pts.length-1)*100)+'%';moveHand();if(progress>=pts.length-9&&!finished){finished=true;drawing=false;bar.style.width='100%';setTimeout(()=>{digitStep++;if(digitStep<digitsArr.length){speak('Muy bien. Ahora el siguiente número.');drawDigit()}else nextStage()},420)}}}moveHand();canvas.addEventListener('pointerdown',e=>{if(finished)return;const p=toP(e),near=nearest(p);if(!near.best||near.d>76||(progress===0&&near.best.index>20)){registerError(n,'Empieza donde está la mano.');moveHand();return}drawing=true;last={x:p.cx,y:p.cy};canvas.setPointerCapture(e.pointerId);advance(p)});canvas.addEventListener('pointermove',e=>{if(!drawing||finished)return;const p=toP(e),near=nearest(p);if(!near.best||near.d>82)return;ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.cx,p.cy);ctx.stroke();last={x:p.cx,y:p.cy};advance(p)});const stop=()=>{drawing=false;last=null};canvas.addEventListener('pointerup',stop);canvas.addEventListener('pointercancel',stop)});
+      speak(`Sigue la línea del ${digit}.`,false);
+    }
+    drawDigit();
+  }
+
+  function repeatCurrentInstruction(){
+    const type=stageTypes[stageIndex],n=currentMissionNumber,kind=objectForNumber(n);
+    if(type==='collect')speak(`Pon ${n} ${objectSpeech(kind)}.`,true);
+    else if(type==='choice')speak(`Busca el número ${n}.`,true);
+    else if(type==='sequence')speak(`Mira la secuencia y encuentra el número que falta.`,true);
+    else if(type==='place'){const {h,t,u}=digits(n),p=[];if(h)p.push(`${h} ${h===1?'centena':'centenas'}`);if(t)p.push(`${t} ${t===1?'decena':'decenas'}`);if(u)p.push(`${u} ${u===1?'unidad':'unidades'}`);speak(`Construye ${n}. ${p.join(', ')}.`,true)}
+    else speak(`Sigue la línea del número ${n}.`,true);
