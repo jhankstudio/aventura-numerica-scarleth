@@ -8,9 +8,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Aventura Numérica" />
   <title>Aventura Numérica de Scarleth</title>
-  <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="icon" href="icons/icon.svg" />
-  <link rel="apple-touch-icon" href="icons/icon.svg" />
+  <link rel="manifest" href="manifest.webmanifest?v=6" />
+  <link rel="icon" href="icons/icon.svg?v=6" />
+  <link rel="apple-touch-icon" href="icons/icon.svg?v=6" />
 </head>
 <body>
   <main id="app" class="app-shell" aria-live="polite">
@@ -28,14 +28,9 @@
         <div id="heroGirl" class="hero-girl" aria-label="Niña protagonista"></div>
         <div class="home-progress" aria-label="Progreso actual">
           <span class="home-progress-star">⭐</span>
-          <div>
-            <b id="homeNumber">1</b>
-            <small id="homeRange">1–10</small>
-          </div>
+          <div><b id="homeNumber">1</b><small id="homeRange">1–10</small></div>
         </div>
-        <button id="continueBtn" class="play-main" type="button" aria-label="Continuar aventura">
-          <span class="play-triangle">▶</span>
-        </button>
+        <button id="continueBtn" class="play-main" type="button" aria-label="Continuar aventura"><span class="play-triangle">▶</span></button>
       </div>
       <nav class="bottom-nav" aria-label="Navegación principal">
         <button type="button" class="active" data-nav="home" aria-label="Inicio"><span>🏠</span></button>
@@ -47,158 +42,25 @@
     </section>
 
     <section id="mapScreen" class="screen" aria-label="Mapa del mundo">
-      <header class="topbar">
-        <button class="circle-btn" data-back="home" type="button" aria-label="Volver">←</button>
-        <button id="worldPill" class="world-pill" type="button" aria-label="Mundo actual"></button>
-        <button id="mapAudio" class="circle-btn audio-pulse" type="button" aria-label="Repetir instrucción">🔊</button>
-      </header>
-      <div class="map-panel paper-card">
-        <div class="map-heading">
-          <h2 id="mapTitle">Jardín Mágico</h2>
-          <div id="mapRange" class="map-range">1–10</div>
-        </div>
-        <div id="pathMap" class="path-map">
-          <svg class="path-ribbon" viewBox="0 0 360 520" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M180 28 C94 86 280 123 180 180 C72 242 286 276 178 342 C88 396 259 443 178 498" />
-          </svg>
-          <div id="mapNodes"></div>
-          <div id="mapDecor" class="map-decor" aria-hidden="true"></div>
-        </div>
-        <div class="family-switch" aria-label="Cambiar grupo de números">
-          <button id="familyPrev" type="button" aria-label="Grupo anterior">←</button>
-          <span id="familyLabel">1–10</span>
-          <button id="familyNext" type="button" aria-label="Grupo siguiente">→</button>
-        </div>
-      </div>
-      <nav class="bottom-nav compact" aria-label="Navegación principal">
-        <button type="button" data-nav="home" aria-label="Inicio">🏠</button>
-        <button type="button" class="active" data-nav="map" aria-label="Mundo">🗺️</button>
-        <button type="button" data-nav="collection" aria-label="Premios">🏆</button>
-        <button type="button" data-nav="collection" aria-label="Colección">⭐</button>
-        <button type="button" data-nav="profile" aria-label="Perfil">👧</button>
-      </nav>
+      <header class="topbar"><button class="circle-btn" data-back="home" type="button" aria-label="Volver">←</button><button id="worldPill" class="world-pill" type="button" aria-label="Mundo actual"></button><button id="mapAudio" class="circle-btn audio-pulse" type="button" aria-label="Repetir instrucción">🔊</button></header>
+      <div class="map-panel paper-card"><div class="map-heading"><h2 id="mapTitle">Jardín Mágico</h2><div id="mapRange" class="map-range">1–10</div></div><div id="pathMap" class="path-map"><svg class="path-ribbon" viewBox="0 0 360 520" preserveAspectRatio="none" aria-hidden="true"><path d="M180 28 C94 86 280 123 180 180 C72 242 286 276 178 342 C88 396 259 443 178 498" /></svg><div id="mapNodes"></div><div id="mapDecor" class="map-decor" aria-hidden="true"></div></div><div class="family-switch" aria-label="Cambiar grupo de números"><button id="familyPrev" type="button" aria-label="Grupo anterior">←</button><span id="familyLabel">1–10</span><button id="familyNext" type="button" aria-label="Grupo siguiente">→</button></div></div>
+      <nav class="bottom-nav compact" aria-label="Navegación principal"><button type="button" data-nav="home" aria-label="Inicio">🏠</button><button type="button" class="active" data-nav="map" aria-label="Mundo">🗺️</button><button type="button" data-nav="collection" aria-label="Premios">🏆</button><button type="button" data-nav="collection" aria-label="Colección">⭐</button><button type="button" data-nav="profile" aria-label="Perfil">👧</button></nav>
     </section>
 
-    <section id="missionScreen" class="screen" aria-label="Misión">
-      <header class="topbar">
-        <button class="circle-btn" data-back="map" type="button" aria-label="Volver">←</button>
-        <div class="mission-pill">⭐</div>
-        <button id="missionAudio" class="circle-btn" type="button" aria-label="Escuchar misión">🔊</button>
-      </header>
-      <div class="mission-center">
-        <div class="mission-card paper-card">
-          <div id="missionArt" class="mission-art"></div>
-          <div id="missionNumber" class="mission-number">1</div>
-          <div id="missionQuantity" class="mission-quantity" aria-hidden="true"></div>
-          <button id="startMission" class="mission-play" type="button" aria-label="Empezar misión">▶</button>
-        </div>
-      </div>
-    </section>
+    <section id="missionScreen" class="screen" aria-label="Misión"><header class="topbar"><button class="circle-btn" data-back="map" type="button" aria-label="Volver">←</button><div class="mission-pill">⭐</div><button id="missionAudio" class="circle-btn" type="button" aria-label="Escuchar misión">🔊</button></header><div class="mission-center"><div class="mission-card paper-card"><div id="missionArt" class="mission-art"></div><div id="missionNumber" class="mission-number">1</div><div id="missionQuantity" class="mission-quantity" aria-hidden="true"></div><button id="startMission" class="mission-play" type="button" aria-label="Empezar misión">▶</button></div></div></section>
 
-    <section id="gameScreen" class="screen" aria-label="Minijuego">
-      <header class="topbar game-topbar">
-        <button class="circle-btn" data-back="map" type="button" aria-label="Salir al mapa">←</button>
-        <div id="stageStars" class="stage-stars" aria-label="Progreso de la misión">☆ ☆ ☆</div>
-        <button id="gameAudio" class="circle-btn audio-pulse" type="button" aria-label="Repetir instrucción">🔊</button>
-      </header>
-      <div id="gameBoard" class="game-board">
-        <div id="taskCard" class="task-card paper-card"></div>
-        <div id="miniAvatar" class="mini-avatar" aria-hidden="true"></div>
-        <div id="playArea" class="play-area"></div>
-      </div>
-      <div id="successOverlay" class="success-overlay" aria-hidden="true">
-        <div class="success-burst">
-          <span class="success-star">★</span>
-          <span class="success-spark s1">✦</span><span class="success-spark s2">✦</span><span class="success-spark s3">✦</span>
-        </div>
-      </div>
-    </section>
+    <section id="gameScreen" class="screen" aria-label="Minijuego"><header class="topbar game-topbar"><button class="circle-btn" data-back="map" type="button" aria-label="Salir al mapa">←</button><div id="stageStars" class="stage-stars" aria-label="Progreso de la misión">☆ ☆ ☆</div><button id="gameAudio" class="circle-btn audio-pulse" type="button" aria-label="Repetir instrucción">🔊</button></header><div id="gameBoard" class="game-board"><div id="taskCard" class="task-card paper-card"></div><div id="miniAvatar" class="mini-avatar" aria-hidden="true"></div><div id="playArea" class="play-area"></div></div><div id="successOverlay" class="success-overlay" aria-hidden="true"><div class="success-burst"><span class="success-star">★</span><span class="success-spark s1">✦</span><span class="success-spark s2">✦</span><span class="success-spark s3">✦</span></div></div></section>
 
-    <section id="rewardScreen" class="screen" aria-label="Recompensa">
-      <div class="reward-center">
-        <div class="reward-card paper-card">
-          <div class="reward-kicker">✨</div>
-          <div id="rewardSticker" class="reward-sticker"></div>
-          <div class="reward-stars">★ ★ ★</div>
-          <div class="reward-confetti" aria-hidden="true">✦ ♥ ✦</div>
-        </div>
-      </div>
-    </section>
+    <section id="rewardScreen" class="screen" aria-label="Recompensa"><div class="reward-center"><div class="reward-card paper-card"><div class="reward-kicker">✨</div><div id="rewardSticker" class="reward-sticker"></div><div class="reward-stars">★ ★ ★</div><div class="reward-confetti" aria-hidden="true">✦ ♥ ✦</div></div></div></section>
 
-    <section id="collectionScreen" class="screen" aria-label="Colección">
-      <header class="topbar">
-        <button class="circle-btn" data-back="home" type="button" aria-label="Volver">←</button>
-        <div class="world-pill static">⭐ Colección</div>
-        <div class="circle-btn ghost" aria-hidden="true">✦</div>
-      </header>
-      <div class="collection-wrap">
-        <div class="collection-summary paper-card">
-          <div class="collection-total"><span>⭐</span><b id="collectionStars">0</b></div>
-          <div class="collection-count"><span>🎁</span><b id="collectionCount">0</b></div>
-        </div>
-        <div id="collectionGrid" class="collection-grid"></div>
-      </div>
-      <nav class="bottom-nav compact" aria-label="Navegación principal">
-        <button type="button" data-nav="home">🏠</button><button type="button" data-nav="map">🗺️</button><button type="button" class="active" data-nav="collection">🏆</button><button type="button" class="active" data-nav="collection">⭐</button><button type="button" data-nav="profile">👧</button>
-      </nav>
-    </section>
+    <section id="collectionScreen" class="screen" aria-label="Colección"><header class="topbar"><button class="circle-btn" data-back="home" type="button" aria-label="Volver">←</button><div class="world-pill static">⭐ Colección</div><div class="circle-btn ghost" aria-hidden="true">✦</div></header><div class="collection-wrap"><div class="collection-summary paper-card"><div class="collection-total"><span>⭐</span><b id="collectionStars">0</b></div><div class="collection-count"><span>🎁</span><b id="collectionCount">0</b></div></div><div id="collectionGrid" class="collection-grid"></div></div><nav class="bottom-nav compact" aria-label="Navegación principal"><button type="button" data-nav="home">🏠</button><button type="button" data-nav="map">🗺️</button><button type="button" class="active" data-nav="collection">🏆</button><button type="button" class="active" data-nav="collection">⭐</button><button type="button" data-nav="profile">👧</button></nav></section>
 
-    <section id="profileScreen" class="screen" aria-label="Perfil">
-      <header class="topbar">
-        <button class="circle-btn" data-back="home" type="button" aria-label="Volver">←</button>
-        <div class="world-pill static">👧 Scarleth</div>
-        <div class="circle-btn ghost">♥</div>
-      </header>
-      <div class="profile-wrap">
-        <div class="profile-card paper-card">
-          <div id="profileGirl" class="profile-girl"></div>
-          <div class="profile-stats">
-            <div><span>⭐</span><b id="profileStars">0</b></div>
-            <div><span>🏆</span><b id="profileCompleted">0</b></div>
-            <div><span>🎁</span><b id="profileRewards">0</b></div>
-          </div>
-          <div id="profileWorld" class="profile-world">Jardín Mágico</div>
-        </div>
-      </div>
-      <nav class="bottom-nav compact" aria-label="Navegación principal">
-        <button type="button" data-nav="home">🏠</button><button type="button" data-nav="map">🗺️</button><button type="button" data-nav="collection">🏆</button><button type="button" data-nav="collection">⭐</button><button type="button" class="active" data-nav="profile">👧</button>
-      </nav>
-    </section>
+    <section id="profileScreen" class="screen" aria-label="Perfil"><header class="topbar"><button class="circle-btn" data-back="home" type="button" aria-label="Volver">←</button><div class="world-pill static">👧 Scarleth</div><div class="circle-btn ghost">♥</div></header><div class="profile-wrap"><div class="profile-card paper-card"><div id="profileGirl" class="profile-girl"></div><div class="profile-stats"><div><span>⭐</span><b id="profileStars">0</b></div><div><span>🏆</span><b id="profileCompleted">0</b></div><div><span>🎁</span><b id="profileRewards">0</b></div></div><div id="profileWorld" class="profile-world">Jardín Mágico</div></div></div><nav class="bottom-nav compact" aria-label="Navegación principal"><button type="button" data-nav="home">🏠</button><button type="button" data-nav="map">🗺️</button><button type="button" data-nav="collection">🏆</button><button type="button" data-nav="collection">⭐</button><button type="button" class="active" data-nav="profile">👧</button></nav></section>
 
-    <section id="adultScreen" class="screen adult-screen" aria-label="Zona adulta">
-      <header class="adult-topbar">
-        <div><small>Zona adulta</small><h2>Progreso de Scarleth</h2></div>
-        <button id="adultClose" class="adult-close" type="button">Cerrar</button>
-      </header>
-      <div class="adult-grid">
-        <div class="adult-stat"><span>Número actual</span><b id="adultCurrent">1</b></div>
-        <div class="adult-stat"><span>Misiones</span><b id="adultCompleted">0</b></div>
-        <div class="adult-stat"><span>Estrellas</span><b id="adultStars">0</b></div>
-        <div class="adult-stat"><span>Intentos fallidos</span><b id="adultErrors">0</b></div>
-      </div>
-      <div class="adult-card">
-        <h3>Mundos</h3>
-        <div id="adultWorlds" class="adult-worlds"></div>
-      </div>
-      <div class="adult-card">
-        <h3>Números que necesitan más práctica</h3>
-        <div id="adultTrouble" class="trouble-list"></div>
-      </div>
-      <div class="adult-card">
-        <h3>Probar un número</h3>
-        <div class="adult-jump">
-          <input id="adultJumpNumber" type="number" min="1" max="300" value="1" inputmode="numeric" aria-label="Número para probar" />
-          <button id="adultJumpBtn" type="button">Abrir misión</button>
-        </div>
-      </div>
-      <div class="adult-actions">
-        <button id="installBtn" class="adult-primary hidden" type="button">Instalar juego</button>
-        <button id="resetBtn" class="adult-danger" type="button">Reiniciar progreso</button>
-      </div>
-    </section>
+    <section id="adultScreen" class="screen adult-screen" aria-label="Zona adulta"><header class="adult-topbar"><div><small>Zona adulta</small><h2>Progreso de Scarleth</h2></div><button id="adultClose" class="adult-close" type="button">Cerrar</button></header><div class="adult-grid"><div class="adult-stat"><span>Número actual</span><b id="adultCurrent">1</b></div><div class="adult-stat"><span>Misiones</span><b id="adultCompleted">0</b></div><div class="adult-stat"><span>Estrellas</span><b id="adultStars">0</b></div><div class="adult-stat"><span>Intentos fallidos</span><b id="adultErrors">0</b></div></div><div class="adult-card"><h3>Mundos</h3><div id="adultWorlds" class="adult-worlds"></div></div><div class="adult-card"><h3>Números que necesitan más práctica</h3><div id="adultTrouble" class="trouble-list"></div></div><div class="adult-card"><h3>Probar un número</h3><div class="adult-jump"><input id="adultJumpNumber" type="number" min="1" max="300" value="1" inputmode="numeric" aria-label="Número para probar" /><button id="adultJumpBtn" type="button">Abrir misión</button></div></div><div class="adult-actions"><button id="installBtn" class="adult-primary hidden" type="button">Instalar juego</button><button id="resetBtn" class="adult-danger" type="button">Reiniciar progreso</button></div></section>
 
     <div id="toast" class="toast" role="status"></div>
   </main>
-  <script src="loader.js" defer></script>
+  <script src="loader.js?v=6" defer></script>
 </body>
 </html>
